@@ -1,7 +1,8 @@
 import {S3} from '@aws-sdk/client-s3';
 import {CurrentWeatherData, DailyWeatherData} from '../interfaces/interfaces';
-import {config} from '../config/config';
+import {config} from '../constants/config';
 import {S3UploadError} from '../errors/appErrors';
+import {messages} from '../constants/messages';
 
 export class S3Manager {
   private s3: S3;
@@ -51,12 +52,11 @@ export class S3Manager {
   }, key: string): Promise<void> {
     try {
       await this.s3.putObject(params);
-      console.log(`Data successfully uploaded to ${params.Bucket}/${key}`);
+      console.log(`${messages.success.dataUploaded(params.Bucket, key)}`);
     } catch (error) {
-      console.error(`Failed to upload data to ${params.Bucket}/${key}:`,
+      console.error(messages.errors.failedUploadDataBucket(params.Bucket, key),
         error);
-      throw new S3UploadError(
-        `Failed to upload data to S3: ${error}`);
+      throw new S3UploadError(messages.errors.failedUploadData(error));
     }
   }
 }

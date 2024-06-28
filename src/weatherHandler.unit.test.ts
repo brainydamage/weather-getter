@@ -1,6 +1,6 @@
 import {fetchWeatherData} from './api/openMeteoService';
 import {S3Manager} from './aws/s3Service';
-import {config} from './config/config';
+import {config} from './constants/config';
 import {
   processCurrentWeather,
   processDailyWeather
@@ -8,7 +8,8 @@ import {
 import {CurrentWeatherData, DailyWeatherData} from './interfaces/interfaces';
 import {WeatherApiResponse} from '@openmeteo/sdk/weather-api-response';
 import {handler} from './weatherHandler';
-import {IncompleteDataError, S3UploadError} from './errors/appErrors';
+import {IncompleteDataError} from './errors/appErrors';
+import {messages} from './constants/messages';
 
 jest.mock('./api/openMeteoService');
 jest.mock('./aws/s3Service');
@@ -99,59 +100,55 @@ describe('WeatherHandler', () => {
 
     expect(result).toEqual({
       statusCode: 200,
-      body: JSON.stringify('Weather data uploaded successfully.')
+      body: JSON.stringify(messages.success.weatherDataUploaded)
     });
   });
 
   it('should return 500 if fetchWeatherData throws an error', async () => {
-    mockFetchWeatherData.mockRejectedValueOnce(
-      new Error('Failed to fetch weather data'));
+    mockFetchWeatherData.mockRejectedValueOnce('');
 
     const result = await handler();
 
     expect(result).toEqual({
       statusCode: 500,
-      body: JSON.stringify({error: 'Failed to fetch weather data'})
+      body: JSON.stringify({error: messages.errors.failedFetchWeather})
     });
   });
 
   it('should return 500 if processCurrentWeather throws an error', async () => {
     mockProcessCurrentWeather.mockImplementationOnce(() => {
-      throw new IncompleteDataError(
-        'Complete current weather data is not available.');
+      throw new IncompleteDataError('');
     });
 
     const result = await handler();
 
     expect(result).toEqual({
       statusCode: 500,
-      body: JSON.stringify({error: 'Failed to fetch weather data'})
+      body: JSON.stringify({error: messages.errors.failedFetchWeather})
     });
   });
 
   it('should return 500 if processDailyWeather throws an error', async () => {
     mockProcessDailyWeather.mockImplementationOnce(() => {
-      throw new IncompleteDataError(
-        'Incomplete daily weather data variables for date.');
+      throw new IncompleteDataError('');
     });
 
     const result = await handler();
 
     expect(result).toEqual({
       statusCode: 500,
-      body: JSON.stringify({error: 'Failed to fetch weather data'})
+      body: JSON.stringify({error: messages.errors.failedFetchWeather})
     });
   });
 
   it('should return 500 if uploadDataToS3 throws an error', async () => {
-    (mockS3Manager.prototype.uploadDataToS3 as jest.Mock).mockRejectedValueOnce(
-      new S3UploadError('Failed to upload data to S3'));
+    (mockS3Manager.prototype.uploadDataToS3 as jest.Mock).mockRejectedValueOnce('');
 
     const result = await handler();
 
     expect(result).toEqual({
       statusCode: 500,
-      body: JSON.stringify({error: 'Failed to fetch weather data'})
+      body: JSON.stringify({error:messages.errors.failedFetchWeather})
     });
   });
 });

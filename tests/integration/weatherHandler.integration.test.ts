@@ -2,6 +2,7 @@ import {handler} from '../../src/weatherHandler';
 import {mockClient} from 'aws-sdk-client-mock';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {fetchWeatherApi} from 'openmeteo';
+import {messages} from '../../src/constants/messages';
 
 const createMockWeatherApiResponse = (currentData: any, dailyData: any) => ({
   current: () => currentData,
@@ -92,7 +93,7 @@ describe('Integration Tests', () => {
 
       expect(result.statusCode).toBe(200);
       expect(result.body)
-        .toBe(JSON.stringify('Weather data uploaded successfully.'));
+        .toBe(JSON.stringify(messages.success.weatherDataUploaded));
       expect(s3Mock.calls()).toHaveLength(3);
     });
   });
@@ -105,19 +106,22 @@ describe('Integration Tests', () => {
             [noCurrentMockResponse]);
 
           const result = await handler();
+
           expect(result.statusCode).toBe(500);
           expect(result.body)
-            .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
         });
 
       it('should handle partial current data returned from the weather API',
         async () => {
           (fetchWeatherApi as jest.Mock).mockResolvedValue(
             [partialCurrentMockResponse]);
+
           const result = await handler();
+
           expect(result.statusCode).toBe(500);
           expect(result.body)
-            .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
         });
     });
 
@@ -126,9 +130,10 @@ describe('Integration Tests', () => {
         (fetchWeatherApi as jest.Mock).mockResolvedValue([noDailyMockResponse]);
 
         const result = await handler();
+
         expect(result.statusCode).toBe(500);
         expect(result.body)
-          .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+          .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
       });
 
       it(
@@ -136,10 +141,12 @@ describe('Integration Tests', () => {
         async () => {
           (fetchWeatherApi as jest.Mock).mockResolvedValue(
             [partialDaily1LevelMockResponse]);
+
           const result = await handler();
+
           expect(result.statusCode).toBe(500);
           expect(result.body)
-            .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
         });
 
       it(
@@ -147,38 +154,44 @@ describe('Integration Tests', () => {
         async () => {
           (fetchWeatherApi as jest.Mock).mockResolvedValue(
             [partialDaily2LevelMockResponse]);
+
           const result = await handler();
+
           expect(result.statusCode).toBe(500);
           expect(result.body)
-            .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
         });
     });
 
     it('should handle if no data returned from the weather API', async () => {
       (fetchWeatherApi as jest.Mock).mockResolvedValue([]);
+
       const result = await handler();
+
       expect(result.statusCode).toBe(500);
       expect(result.body)
-        .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
     });
 
     it('should handle invalid API response format', async () => {
       (fetchWeatherApi as jest.Mock).mockResolvedValue([invalidMockResponse]);
 
       const result = await handler();
+
       expect(result.statusCode).toBe(500);
       expect(result.body)
-        .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
     });
 
     it('should handle S3 upload failure', async () => {
       (fetchWeatherApi as jest.Mock).mockResolvedValue([validMockResponse]);
-      s3Mock.on(PutObjectCommand).rejects(new Error('S3 upload failed'));
+      s3Mock.on(PutObjectCommand).rejects('');
 
       const result = await handler();
+
       expect(result.statusCode).toBe(500);
       expect(result.body)
-        .toBe(JSON.stringify({error: 'Failed to fetch weather data'}));
+        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
     });
   });
 });

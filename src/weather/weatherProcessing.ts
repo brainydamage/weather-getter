@@ -2,11 +2,12 @@ import {range} from '../utils/utilities';
 import {WeatherApiResponse} from '@openmeteo/sdk/weather-api-response';
 import {CurrentWeatherData, DailyWeatherData} from '../interfaces/interfaces';
 import {DataNotAvailableError, IncompleteDataError} from '../errors/appErrors';
+import {messages} from '../constants/messages';
 
 export function processCurrentWeather(response: WeatherApiResponse): CurrentWeatherData {
   const current = response.current();
   if (!current) {
-    throw new DataNotAvailableError('No current weather data available.');
+    throw new DataNotAvailableError(messages.errors.noCurrentWeatherData);
   }
 
   const temperature = current.variables(0)?.value();
@@ -15,8 +16,7 @@ export function processCurrentWeather(response: WeatherApiResponse): CurrentWeat
   const windDirection = current.variables(3)?.value();
 
   if (!temperature || !weatherCode || !windSpeed || !windDirection) {
-    throw new IncompleteDataError(
-      'Incomplete current weather data variables');
+    throw new IncompleteDataError(messages.errors.incompleteCurrentData);
   }
 
   const utcOffsetSeconds = response.utcOffsetSeconds();
@@ -34,7 +34,7 @@ export function processCurrentWeather(response: WeatherApiResponse): CurrentWeat
 export function processDailyWeather(response: WeatherApiResponse): DailyWeatherData[] {
   const daily = response.daily();
   if (!daily) {
-    throw new DataNotAvailableError('No daily weather data available.');
+    throw new DataNotAvailableError(messages.errors.noDailyWeatherData);
   }
 
   const utcOffsetSeconds = response.utcOffsetSeconds();
@@ -49,15 +49,14 @@ export function processDailyWeather(response: WeatherApiResponse): DailyWeatherD
     const tempMinValues = daily.variables(2)?.valuesArray();
 
     if (!weatherValues || !tempMaxValues || !tempMinValues) {
-      throw new IncompleteDataError(
-        `Incomplete daily weather data`);
+      throw new IncompleteDataError(messages.errors.incompleteDailyData);
     }
 
     for (let i = 0; i < times.length; i++) {
       if (weatherValues[i] == null || tempMaxValues[i] == null ||
         tempMinValues[i] == null) {
         throw new IncompleteDataError(
-          `Incomplete daily weather data variables for date: ${times[i]}}`);
+          `${messages.errors.incompleteDailyDataVariables(times[i])}`);
       }
     }
 

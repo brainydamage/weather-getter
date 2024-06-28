@@ -67,7 +67,7 @@ describe('S3Manager', () => {
 
   it('should throw S3UploadError on daily weather data upload failure',
     async () => {
-      s3Mock.on(PutObjectCommand).rejects(new Error('Upload error'));
+      s3Mock.on(PutObjectCommand).rejects('');
 
       const s3Manager = new S3Manager('test-region', 'test-bucket');
       const data: DailyWeatherData[] = [
