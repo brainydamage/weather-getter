@@ -1,8 +1,6 @@
 {
   "name": "weather-getter",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "scripts": {
     "build": "tsc",
     "test:unit": "jest --config jest.unit.config.js",
@@ -10,9 +8,6 @@
     "coverage:unit": "jest --config jest.unit.config.js --coverage",
     "coverage:integration": "jest --config jest.integration.config.js --coverage"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.600.0",
     "@aws-sdk/client-s3": "^3.600.0",

@@ -3,7 +3,6 @@
 FUNCTION_NAME=weatherHandler
 REGION=eu-central-1
 
-# Package your Lambda function
 echo "Packaging Lambda function..."
 zip -r deployment.zip . > /dev/null 2>&1
 
