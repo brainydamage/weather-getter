@@ -1,7 +1,6 @@
 module.exports = {
-  roots: ['<rootDir>/src/tests/integration'],
+  roots: ['<rootDir>/tests/integration'],
   testMatch: ['**/?(*.)integration.test.ts'],
-  setupFiles: ['./jest.setup.js'],
   preset: 'ts-jest',
   testEnvironment: 'node',
   coverageDirectory: 'coverage/integration',

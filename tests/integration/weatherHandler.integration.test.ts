@@ -1,4 +1,4 @@
-import {handler} from '../../weatherHandler';
+import {handler} from '../../src/weatherHandler';
 import {mockClient} from 'aws-sdk-client-mock';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {fetchWeatherApi} from 'openmeteo';
