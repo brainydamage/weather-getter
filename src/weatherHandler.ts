@@ -1,13 +1,13 @@
-import {fetchWeatherData} from './api/openMeteoService';
-import {S3Manager} from './aws/s3Service';
-import {config} from './constants/config';
+import { fetchWeatherData } from './api/openMeteoService';
+import { S3Manager } from './aws/s3Service';
+import { config } from './constants/config';
 import {
   processCurrentWeather,
-  processDailyWeather
+  processDailyWeather,
 } from './weather/weatherProcessing';
-import {WeatherApiParams} from './interfaces/interfaces';
-import {WeatherApiResponse} from '@openmeteo/sdk/weather-api-response';
-import {messages} from './constants/messages';
+import { WeatherApiParams } from './interfaces/interfaces';
+import { WeatherApiResponse } from '@openmeteo/sdk/weather-api-response';
+import { messages } from './constants/messages';
 
 const s3Manager = new S3Manager(config.awsRegion, config.bucketName);
 
@@ -30,19 +30,21 @@ async function handleWeatherData(weatherData: WeatherApiResponse) {
 
 export const handler = async () => {
   try {
-    const weatherData = await fetchWeatherData(config.apiUrl,
-      getWeatherApiParams());
+    const weatherData = await fetchWeatherData(
+      config.apiUrl,
+      getWeatherApiParams(),
+    );
     await handleWeatherData(weatherData);
 
     return {
       statusCode: 200,
-      body: JSON.stringify(messages.success.weatherDataUploaded)
+      body: JSON.stringify(messages.success.weatherDataUploaded),
     };
   } catch (error) {
     console.error(messages.errors.errorFetchingWeatherData(error));
     return {
       statusCode: 500,
-      body: JSON.stringify({error: messages.errors.failedFetchWeather})
+      body: JSON.stringify({ error: messages.errors.failedFetchWeather }),
     };
   }
 };

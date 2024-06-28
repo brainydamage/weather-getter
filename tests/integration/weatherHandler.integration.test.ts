@@ -1,13 +1,16 @@
-import {handler} from '../../src/weatherHandler';
-import {mockClient} from 'aws-sdk-client-mock';
-import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
-import {fetchWeatherApi} from 'openmeteo';
-import {messages} from '../../src/constants/messages';
+import { handler } from '../../src/weatherHandler';
+import { mockClient } from 'aws-sdk-client-mock';
+import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { fetchWeatherApi } from 'openmeteo';
+import { messages } from '../../src/constants/messages';
 
-const createMockWeatherApiResponse = (currentData: any, dailyData: any) => ({
+const createMockWeatherApiResponse = (
+  currentData: object | null,
+  dailyData: object | null,
+) => ({
   current: () => currentData,
   daily: () => dailyData,
-  utcOffsetSeconds: () => 3600
+  utcOffsetSeconds: () => 3600,
 });
 
 jest.mock('openmeteo');
@@ -22,8 +25,8 @@ describe('Integration Tests', () => {
   const currentValid = {
     time: () => '1627902000',
     variables: (index: number) => ({
-      value: () => [22.5, 800, 5.1, 200][index]
-    })
+      value: () => [22.5, 800, 5.1, 200][index],
+    }),
   };
 
   const dailyValid = {
@@ -31,19 +34,20 @@ describe('Integration Tests', () => {
     timeEnd: () => '1722769200',
     interval: () => 86400,
     variables: (index: number) => ({
-      valuesArray: () => [
-        [800, 801],
-        [22.5, 23.5],
-        [15.5, 16.5]
-      ][index]
-    })
+      valuesArray: () =>
+        [
+          [800, 801],
+          [22.5, 23.5],
+          [15.5, 16.5],
+        ][index],
+    }),
   };
 
   const currentPartial = {
     time: () => '1627902000',
     variables: (index: number) => ({
-      value: () => [22.5, null, 5.1, 200][index]
-    })
+      value: () => [22.5, null, 5.1, 200][index],
+    }),
   };
 
   const dailyPartial1Level = {
@@ -51,12 +55,8 @@ describe('Integration Tests', () => {
     timeEnd: () => '1722769200',
     interval: () => 86400,
     variables: (index: number) => ({
-      valuesArray: () => [
-        [800, 801],
-        null,
-        [15.5, 16.5]
-      ][index]
-    })
+      valuesArray: () => [[800, 801], null, [15.5, 16.5]][index],
+    }),
   };
 
   const dailyPartial2Level = {
@@ -64,22 +64,31 @@ describe('Integration Tests', () => {
     timeEnd: () => '1722769200',
     interval: () => 86400,
     variables: (index: number) => ({
-      valuesArray: () => [
-        [800, 801],
-        [22.5, 23.5],
-        [15.5, null]
-      ][index]
-    })
+      valuesArray: () =>
+        [
+          [800, 801],
+          [22.5, 23.5],
+          [15.5, null],
+        ][index],
+    }),
   };
 
-  const validMockResponse = createMockWeatherApiResponse(currentValid,
-    dailyValid);
+  const validMockResponse = createMockWeatherApiResponse(
+    currentValid,
+    dailyValid,
+  );
   const partialCurrentMockResponse = createMockWeatherApiResponse(
-    currentPartial, dailyValid);
+    currentPartial,
+    dailyValid,
+  );
   const partialDaily1LevelMockResponse = createMockWeatherApiResponse(
-    currentValid, dailyPartial1Level);
+    currentValid,
+    dailyPartial1Level,
+  );
   const partialDaily2LevelMockResponse = createMockWeatherApiResponse(
-    currentValid, dailyPartial2Level);
+    currentValid,
+    dailyPartial2Level,
+  );
   const noCurrentMockResponse = createMockWeatherApiResponse(null, dailyValid);
   const noDailyMockResponse = createMockWeatherApiResponse(currentValid, null);
   const invalidMockResponse = {};
@@ -92,37 +101,40 @@ describe('Integration Tests', () => {
       const result = await handler();
 
       expect(result.statusCode).toBe(200);
-      expect(result.body)
-        .toBe(JSON.stringify(messages.success.weatherDataUploaded));
+      expect(result.body).toBe(
+        JSON.stringify(messages.success.weatherDataUploaded),
+      );
       expect(s3Mock.calls()).toHaveLength(3);
     });
   });
 
   describe('Error scenarios', () => {
     describe('Current data', () => {
-      it('should handle missing current data from the weather API',
-        async () => {
-          (fetchWeatherApi as jest.Mock).mockResolvedValue(
-            [noCurrentMockResponse]);
+      it('should handle missing current data from the weather API', async () => {
+        (fetchWeatherApi as jest.Mock).mockResolvedValue([
+          noCurrentMockResponse,
+        ]);
 
-          const result = await handler();
+        const result = await handler();
 
-          expect(result.statusCode).toBe(500);
-          expect(result.body)
-            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
-        });
+        expect(result.statusCode).toBe(500);
+        expect(result.body).toBe(
+          JSON.stringify({ error: messages.errors.failedFetchWeather }),
+        );
+      });
 
-      it('should handle partial current data returned from the weather API',
-        async () => {
-          (fetchWeatherApi as jest.Mock).mockResolvedValue(
-            [partialCurrentMockResponse]);
+      it('should handle partial current data returned from the weather API', async () => {
+        (fetchWeatherApi as jest.Mock).mockResolvedValue([
+          partialCurrentMockResponse,
+        ]);
 
-          const result = await handler();
+        const result = await handler();
 
-          expect(result.statusCode).toBe(500);
-          expect(result.body)
-            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
-        });
+        expect(result.statusCode).toBe(500);
+        expect(result.body).toBe(
+          JSON.stringify({ error: messages.errors.failedFetchWeather }),
+        );
+      });
     });
 
     describe('Daily data', () => {
@@ -132,35 +144,36 @@ describe('Integration Tests', () => {
         const result = await handler();
 
         expect(result.statusCode).toBe(500);
-        expect(result.body)
-          .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
+        expect(result.body).toBe(
+          JSON.stringify({ error: messages.errors.failedFetchWeather }),
+        );
       });
 
-      it(
-        'should handle first level partial daily data returned from the weather API',
-        async () => {
-          (fetchWeatherApi as jest.Mock).mockResolvedValue(
-            [partialDaily1LevelMockResponse]);
+      it('should handle first level partial daily data returned from the weather API', async () => {
+        (fetchWeatherApi as jest.Mock).mockResolvedValue([
+          partialDaily1LevelMockResponse,
+        ]);
 
-          const result = await handler();
+        const result = await handler();
 
-          expect(result.statusCode).toBe(500);
-          expect(result.body)
-            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
-        });
+        expect(result.statusCode).toBe(500);
+        expect(result.body).toBe(
+          JSON.stringify({ error: messages.errors.failedFetchWeather }),
+        );
+      });
 
-      it(
-        'should handle second lever partial daily data returned from the weather API',
-        async () => {
-          (fetchWeatherApi as jest.Mock).mockResolvedValue(
-            [partialDaily2LevelMockResponse]);
+      it('should handle second lever partial daily data returned from the weather API', async () => {
+        (fetchWeatherApi as jest.Mock).mockResolvedValue([
+          partialDaily2LevelMockResponse,
+        ]);
 
-          const result = await handler();
+        const result = await handler();
 
-          expect(result.statusCode).toBe(500);
-          expect(result.body)
-            .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
-        });
+        expect(result.statusCode).toBe(500);
+        expect(result.body).toBe(
+          JSON.stringify({ error: messages.errors.failedFetchWeather }),
+        );
+      });
     });
 
     it('should handle if no data returned from the weather API', async () => {
@@ -169,8 +182,9 @@ describe('Integration Tests', () => {
       const result = await handler();
 
       expect(result.statusCode).toBe(500);
-      expect(result.body)
-        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
+      expect(result.body).toBe(
+        JSON.stringify({ error: messages.errors.failedFetchWeather }),
+      );
     });
 
     it('should handle invalid API response format', async () => {
@@ -179,8 +193,9 @@ describe('Integration Tests', () => {
       const result = await handler();
 
       expect(result.statusCode).toBe(500);
-      expect(result.body)
-        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
+      expect(result.body).toBe(
+        JSON.stringify({ error: messages.errors.failedFetchWeather }),
+      );
     });
 
     it('should handle S3 upload failure', async () => {
@@ -190,8 +205,9 @@ describe('Integration Tests', () => {
       const result = await handler();
 
       expect(result.statusCode).toBe(500);
-      expect(result.body)
-        .toBe(JSON.stringify({error: messages.errors.failedFetchWeather}));
+      expect(result.body).toBe(
+        JSON.stringify({ error: messages.errors.failedFetchWeather }),
+      );
     });
   });
 });

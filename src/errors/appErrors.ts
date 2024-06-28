@@ -1,4 +1,4 @@
-import {AppError} from './baseError';
+import { AppError } from './baseError';
 
 export class DataNotAvailableError extends AppError {
   constructor(message: string) {

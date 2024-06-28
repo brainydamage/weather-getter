@@ -8,8 +8,11 @@
  * @param step - The interval in seconds between dates in array
  * @returns An array of numbers (timestamps)
  */
-export const generateRange = (start: number, stop: number,
-                              step: number): number[] => {
+export const generateRange = (
+  start: number,
+  stop: number,
+  step: number,
+): number[] => {
   const length = Math.ceil((stop - start) / step);
-  return Array.from({length}, (_, i) => start + i * step);
+  return Array.from({ length }, (_, i) => start + i * step);
 };

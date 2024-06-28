@@ -1,10 +1,15 @@
-import {generateRange} from '../utils/utilities';
-import {WeatherApiResponse} from '@openmeteo/sdk/weather-api-response';
-import {CurrentWeatherData, DailyWeatherData} from '../interfaces/interfaces';
-import {DataNotAvailableError, IncompleteDataError} from '../errors/appErrors';
-import {messages} from '../constants/messages';
+import { generateRange } from '../utils/utilities';
+import { WeatherApiResponse } from '@openmeteo/sdk/weather-api-response';
+import { CurrentWeatherData, DailyWeatherData } from '../interfaces/interfaces';
+import {
+  DataNotAvailableError,
+  IncompleteDataError,
+} from '../errors/appErrors';
+import { messages } from '../constants/messages';
 
-export function processCurrentWeather(response: WeatherApiResponse): CurrentWeatherData {
+export function processCurrentWeather(
+  response: WeatherApiResponse,
+): CurrentWeatherData {
   const current = response.current();
   if (!current) {
     throw new DataNotAvailableError(messages.errors.noCurrentWeatherData);
@@ -23,7 +28,8 @@ export function processCurrentWeather(response: WeatherApiResponse): CurrentWeat
 
   return {
     time: new Date(
-      (Number(current.time()) + utcOffsetSeconds) * 1000).toISOString(),
+      (Number(current.time()) + utcOffsetSeconds) * 1000,
+    ).toISOString(),
     temperature: temperature,
     weatherCode: weatherCode,
     windSpeed: windSpeed,
@@ -31,17 +37,20 @@ export function processCurrentWeather(response: WeatherApiResponse): CurrentWeat
   };
 }
 
-export function processDailyWeather(response: WeatherApiResponse): DailyWeatherData[] {
+export function processDailyWeather(
+  response: WeatherApiResponse,
+): DailyWeatherData[] {
   const daily = response.daily();
   if (!daily) {
     throw new DataNotAvailableError(messages.errors.noDailyWeatherData);
   }
 
   const utcOffsetSeconds = response.utcOffsetSeconds();
-  const times = generateRange(Number(daily.time()), Number(daily.timeEnd()),
-    daily.interval())
-    .map(t => new Date((t + utcOffsetSeconds) * 1000).toISOString()
-    );
+  const times = generateRange(
+    Number(daily.time()),
+    Number(daily.timeEnd()),
+    daily.interval(),
+  ).map((t) => new Date((t + utcOffsetSeconds) * 1000).toISOString());
 
   return times.map((date, index) => {
     const weatherValues = daily.variables(0)?.valuesArray();
@@ -53,10 +62,14 @@ export function processDailyWeather(response: WeatherApiResponse): DailyWeatherD
     }
 
     for (let i = 0; i < times.length; i++) {
-      if (weatherValues[i] == null || tempMaxValues[i] == null ||
-        tempMinValues[i] == null) {
+      if (
+        weatherValues[i] == null ||
+        tempMaxValues[i] == null ||
+        tempMinValues[i] == null
+      ) {
         throw new IncompleteDataError(
-          `${messages.errors.incompleteDailyDataVariables(times[i])}`);
+          `${messages.errors.incompleteDailyDataVariables(times[i])}`,
+        );
       }
     }
 
