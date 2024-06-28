@@ -1,4 +1,4 @@
-import {range} from '../utils/utilities';
+import {generateRange} from '../utils/utilities';
 import {WeatherApiResponse} from '@openmeteo/sdk/weather-api-response';
 import {CurrentWeatherData, DailyWeatherData} from '../interfaces/interfaces';
 import {DataNotAvailableError, IncompleteDataError} from '../errors/appErrors';
@@ -38,7 +38,7 @@ export function processDailyWeather(response: WeatherApiResponse): DailyWeatherD
   }
 
   const utcOffsetSeconds = response.utcOffsetSeconds();
-  const times = range(Number(daily.time()), Number(daily.timeEnd()),
+  const times = generateRange(Number(daily.time()), Number(daily.timeEnd()),
     daily.interval())
     .map(t => new Date((t + utcOffsetSeconds) * 1000).toISOString()
     );
