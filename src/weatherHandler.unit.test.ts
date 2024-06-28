@@ -77,78 +77,84 @@ describe('WeatherHandler', () => {
       void 0);
   });
 
-  it('should handle weather data successfully', async () => {
-    const result = await handler();
+  describe('Success scenarios', () => {
+    it('should handle weather data successfully', async () => {
+      const result = await handler();
 
-    expect(mockFetchWeatherData).toHaveBeenCalledWith(config.apiUrl, {
-      latitude: config.latitude,
-      longitude: config.longitude,
-      current: config.currentParams,
-      daily: config.dailyParams,
-      timezone: config.timezone,
-    });
+      expect(mockFetchWeatherData).toHaveBeenCalledWith(config.apiUrl, {
+        latitude: config.latitude,
+        longitude: config.longitude,
+        current: config.currentParams,
+        daily: config.dailyParams,
+        timezone: config.timezone,
+      });
 
-    expect(mockProcessCurrentWeather)
-      .toHaveBeenCalledWith(mockWeatherApiResponse);
-    expect(mockProcessDailyWeather)
-      .toHaveBeenCalledWith(mockWeatherApiResponse);
+      expect(mockProcessCurrentWeather)
+        .toHaveBeenCalledWith(mockWeatherApiResponse);
+      expect(mockProcessDailyWeather)
+        .toHaveBeenCalledWith(mockWeatherApiResponse);
 
-    expect(mockS3Manager.prototype.uploadDataToS3)
-      .toHaveBeenCalledWith(mockCurrentWeatherData);
-    expect(mockS3Manager.prototype.uploadDataToS3)
-      .toHaveBeenCalledWith(mockDailyWeatherData);
+      expect(mockS3Manager.prototype.uploadDataToS3)
+        .toHaveBeenCalledWith(mockCurrentWeatherData);
+      expect(mockS3Manager.prototype.uploadDataToS3)
+        .toHaveBeenCalledWith(mockDailyWeatherData);
 
-    expect(result).toEqual({
-      statusCode: 200,
-      body: JSON.stringify(messages.success.weatherDataUploaded)
-    });
-  });
-
-  it('should return 500 if fetchWeatherData throws an error', async () => {
-    mockFetchWeatherData.mockRejectedValueOnce('');
-
-    const result = await handler();
-
-    expect(result).toEqual({
-      statusCode: 500,
-      body: JSON.stringify({error: messages.errors.failedFetchWeather})
+      expect(result).toEqual({
+        statusCode: 200,
+        body: JSON.stringify(messages.success.weatherDataUploaded)
+      });
     });
   });
 
-  it('should return 500 if processCurrentWeather throws an error', async () => {
-    mockProcessCurrentWeather.mockImplementationOnce(() => {
-      throw new IncompleteDataError('');
+  describe('Error scenarios', () => {
+    it('should return 500 if fetchWeatherData throws an error', async () => {
+      mockFetchWeatherData.mockRejectedValueOnce(new Error('Fetch error'));
+
+      const result = await handler();
+
+      expect(result).toEqual({
+        statusCode: 500,
+        body: JSON.stringify({error: messages.errors.failedFetchWeather})
+      });
     });
 
-    const result = await handler();
+    it('should return 500 if processCurrentWeather throws an error',
+      async () => {
+        mockProcessCurrentWeather.mockImplementationOnce(() => {
+          throw new IncompleteDataError('');
+        });
 
-    expect(result).toEqual({
-      statusCode: 500,
-      body: JSON.stringify({error: messages.errors.failedFetchWeather})
+        const result = await handler();
+
+        expect(result).toEqual({
+          statusCode: 500,
+          body: JSON.stringify({error: messages.errors.failedFetchWeather})
+        });
+      });
+
+    it('should return 500 if processDailyWeather throws an error', async () => {
+      mockProcessDailyWeather.mockImplementationOnce(() => {
+        throw new IncompleteDataError('');
+      });
+
+      const result = await handler();
+
+      expect(result).toEqual({
+        statusCode: 500,
+        body: JSON.stringify({error: messages.errors.failedFetchWeather})
+      });
     });
-  });
 
-  it('should return 500 if processDailyWeather throws an error', async () => {
-    mockProcessDailyWeather.mockImplementationOnce(() => {
-      throw new IncompleteDataError('');
-    });
+    it('should return 500 if uploadDataToS3 throws an error', async () => {
+      (mockS3Manager.prototype.uploadDataToS3 as jest.Mock).mockRejectedValueOnce(
+        new Error('Upload error'));
 
-    const result = await handler();
+      const result = await handler();
 
-    expect(result).toEqual({
-      statusCode: 500,
-      body: JSON.stringify({error: messages.errors.failedFetchWeather})
-    });
-  });
-
-  it('should return 500 if uploadDataToS3 throws an error', async () => {
-    (mockS3Manager.prototype.uploadDataToS3 as jest.Mock).mockRejectedValueOnce('');
-
-    const result = await handler();
-
-    expect(result).toEqual({
-      statusCode: 500,
-      body: JSON.stringify({error:messages.errors.failedFetchWeather})
+      expect(result).toEqual({
+        statusCode: 500,
+        body: JSON.stringify({error: messages.errors.failedFetchWeather})
+      });
     });
   });
 });

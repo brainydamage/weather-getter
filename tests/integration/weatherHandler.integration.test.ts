@@ -185,7 +185,7 @@ describe('Integration Tests', () => {
 
     it('should handle S3 upload failure', async () => {
       (fetchWeatherApi as jest.Mock).mockResolvedValue([validMockResponse]);
-      s3Mock.on(PutObjectCommand).rejects('');
+      s3Mock.on(PutObjectCommand).rejects(new Error('Upload error'));
 
       const result = await handler();
 

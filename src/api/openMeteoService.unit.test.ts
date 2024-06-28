@@ -7,22 +7,27 @@ jest.mock('openmeteo', () => ({
 }));
 
 describe('fetchWeatherData', () => {
-  it('should return weather data successfully', async () => {
-    const mockResponse = [{current: {}, daily: {}}];
-    (openmeteo.fetchWeatherApi as jest.Mock).mockResolvedValue(mockResponse);
+  const url = 'test-url';
+  const params = { latitude: 0, longitude: 0, current: '', daily: '', timezone: '' };
 
-    const result = await fetchWeatherData('test-url',
-      {latitude: 0, longitude: 0, current: '', daily: '', timezone: ''});
+  describe('Success scenarios', () => {
+    it('should return weather data successfully', async () => {
+      const mockResponse = [{ current: {}, daily: {} }];
+      (openmeteo.fetchWeatherApi as jest.Mock).mockResolvedValue(mockResponse);
 
-    expect(result).toEqual(mockResponse[0]);
+      const result = await fetchWeatherData(url, params);
+
+      expect(result).toEqual(mockResponse[0]);
+    });
   });
 
-  it('should throw DataNotAvailableError if no data is returned', async () => {
-    (openmeteo.fetchWeatherApi as jest.Mock).mockResolvedValue([]);
+  describe('Error scenarios', () => {
+    it('should throw DataNotAvailableError if no data is returned', async () => {
+      (openmeteo.fetchWeatherApi as jest.Mock).mockResolvedValue([]);
 
-    await expect(fetchWeatherData('test-url',
-      {latitude: 0, longitude: 0, current: '', daily: '', timezone: ''}))
-      .rejects
-      .toThrow(DataNotAvailableError);
+      await expect(fetchWeatherData(url, params))
+        .rejects
+        .toThrow(DataNotAvailableError);
+    });
   });
 });
