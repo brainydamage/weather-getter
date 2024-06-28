@@ -1,4 +1,3 @@
-// test/api/openMeteoService.test.ts
 import {fetchWeatherData} from './openMeteoService';
 import {DataNotAvailableError} from '../errors/appErrors';
 import * as openmeteo from 'openmeteo';

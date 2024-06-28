@@ -1,9 +1,8 @@
-// test/aws/s3Service.test.ts
 import {S3Manager} from './s3Service';
 import {mockClient} from 'aws-sdk-client-mock';
 import {PutObjectCommand, S3Client} from '@aws-sdk/client-s3';
 import {S3UploadError} from '../errors/appErrors';
-import {DailyWeatherData} from '../../src/interfaces/interfaces';
+import {DailyWeatherData} from '../interfaces/interfaces';
 
 const s3Mock = mockClient(S3Client);
 
