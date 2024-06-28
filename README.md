@@ -2,7 +2,15 @@
 
 ## Project Description
 
-Weather Getter is an AWS Lambda function that fetches data from the public weather service OpenMeteo via an API and stores it into JSON formatted files in an AWS S3 bucket.
+Weather Getter is an AWS Lambda function that fetches current and daily weather data from the public weather service OpenMeteo via an API. 
+
+It retrieves the following information:
+- **Current Weather Data**: Includes temperature, weather code, wind speed, and wind direction.
+- **Daily Weather Data**: Includes weather code, maximum temperature, and minimum temperature for each of the next seven days starting from today.
+
+The fetched data is then uploaded to an AWS S3 bucket in JSON format. Specifically, the function uploads a total of eight files to the S3 bucket:
+- One file containing the current weather data.
+- Seven files, each containing the daily weather data for one of the next seven days.
 
 ## Technologies Used
 
